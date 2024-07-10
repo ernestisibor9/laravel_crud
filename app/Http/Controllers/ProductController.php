@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+
+class ProductController extends Controller
+{
+    // Index
+    public function Index()
+    {
+        $products = Product::latest()->get();
+        return view('welcome', compact('products'));
+    }
+    // StoreProduct
+    public function StoreProduct(Request $request)
+    {
+        // Get the productimage
+        $image = $request->file('product_image');
+        $filename = date('YmdHi') . $image->getClientOriginalName();
+        $image->move(public_path('upload/product/'), $filename);
+        $save_url = 'upload/product/' . $filename;
+
+        // Insert product into the database
+        Product::insert([
+            'product_name' => $request->product_name,
+            'category' => $request->category,
+            'price' => $request->price,
+            'product_image' => $save_url,
+            'created_at' => Carbon::now()
+        ]);
+        // Notify the user that the product has been successfully added to the database
+        $notification = array(
+            'message' => 'Product Inserted Successfully',
+            'alert-type' => 'success'
+        );
+        return redirect()->back()->with($notification);
+    }
+
+    // UpdateProduct
+    public function UpdateProduct(Request $request)
+    {
+        $pid = $request->id;
+
+        // Update image
+        if ($request->file('product_image')) {
+            $image = $request->file('product_image');
+            $filename = date('YmdHi') . $image->getClientOriginalName();
+            $image->move(public_path('upload/product/'), $filename);
+            $save_url = 'upload/product/' . $filename;
+
+            // Update product into the database
+            Product::find($pid)->update([
+                'product_name' => $request->product_name,
+                'category' => $request->category,
+                'price' => $request->price,
+                'product_image' => $save_url,
+                'created_at' => Carbon::now()
+            ]);
+        } else {
+            // Update product into the database
+            Product::find($pid)->update([
+                'product_name' => $request->product_name,
+                'category' => $request->category,
+                'price' => $request->price,
+                'created_at' => Carbon::now()
+            ]);
+        }
+        // Notify the user that the product has been successfully added to the database
+        $notification = array(
+            'message' => 'Product Updated Successfully',
+            'alert-type' => 'success'
+        );
+        return redirect()->back()->with($notification);
+    }
+    // DeleteProduct
+    public function DeleteProduct($id){
+        $deleteId = Product::find($id);
+        // Delete image
+        unlink($deleteId->product_image);
+        // Delete product from the database
+        Product::find($id)->delete();
+
+        $notification = array(
+            'message' => 'Product Deleted Successfully',
+            'alert-type' => 'error',
+        );
+        return redirect()->back()->with($notification);
+    }
+}
