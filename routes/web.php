@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PayPalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,3 +31,11 @@ Route::post('/update/product/', [ProductController::class, 'UpdateProduct'])->na
 
 // Route for deleting products from the database
 Route::get('/delete/product/{id}', [ProductController::class, 'DeleteProduct'])->name('delete.product');
+
+// Route for invoice and generating pdf
+Route::get('/download.invoice/{id}', [ProductController::class, 'DownloadProduct'])->name('download.invoice');
+
+// PayPal routes
+Route::post('/buy/product/paypal', [PayPalController::class, 'PayPal'])->name('paypal');
+Route::get('/success', [PayPalController::class, 'Success'])->name('success');
+Route::post('/cancel', [PayPalController::class, 'Cancel'])->name('cancel');
